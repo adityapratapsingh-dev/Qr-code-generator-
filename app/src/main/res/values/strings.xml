@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">QR Code Generator</string>
+    <string name="header_subtitle">Smart Presets • Vector SVG • 100% Private</string>
+    <string name="privacy_badge">Zero Telemetry</string>
+    <string name="input_label">Content or URL</string>
+    <string name="input_placeholder">Type or paste any URL, Wi-Fi or text string here…</string>
+    <string name="generate_button">Generate QR Code</string>
+    <string name="download_button">Download PNG</string>
+    <string name="download_svg_button">Vector SVG</string>
+    <string name="share_button">Share</string>
+    <string name="copy_button">Copy Text</string>
+    <string name="qr_placeholder_title">Your QR code will appear here</string>
+    <string name="qr_placeholder_desc">Select a preset above and tap generate</string>
+    <string name="saved_success">QR Code saved to Pictures</string>
+    <string name="saved_svg_success">Vector SVG saved to Downloads</string>
+    <string name="save_failed">Could not save file</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="history_title">Recent History</string>
+    <string name="history_empty">No generation history yet</string>
+    <string name="color_themes_title">Color Themes</string>
+    <string name="center_emblem_title">Center Emblem / Badge</string>
+    <string name="scan_frame_title">Scan Me Frame</string>
+    <string name="live_preview_title">Live Auto-Update</string>
+    <string name="demo_button">Try Demo Data</string>
+</resources>

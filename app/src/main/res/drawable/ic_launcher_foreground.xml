@@ -1,0 +1,37 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- QR Corner Top-Left Outer Frame -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 28 26 L 44 26 C 45.1 26 46 26.9 46 28 L 46 44 C 46 45.1 45.1 46 44 46 L 28 46 C 26.9 46 26 45.1 26 44 L 26 28 C 26 26.9 26.9 26 28 26 Z M 30 30 L 30 42 L 42 42 L 42 30 Z" />
+    <!-- QR Corner Top-Left Inner Dot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 33 33 L 39 33 C 39.6 33 40 33.4 40 34 L 40 38 C 40 38.6 39.6 39 39 39 L 33 39 C 32.4 39 32 38.6 32 38 L 32 34 C 32 33.4 32.4 33 33 33 Z" />
+
+    <!-- QR Corner Top-Right Outer Frame -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 64 26 L 80 26 C 81.1 26 82 26.9 82 28 L 82 44 C 82 45.1 81.1 46 80 46 L 64 46 C 62.9 46 62 45.1 62 44 L 62 28 C 62 26.9 62.9 26 64 26 Z M 66 30 L 66 42 L 78 42 L 78 30 Z" />
+    <!-- QR Corner Top-Right Inner Dot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 69 33 L 75 33 C 75.6 33 76 33.4 76 34 L 76 38 C 76 38.6 75.6 39 75 39 L 69 39 C 68.4 39 68 38.6 68 38 L 68 34 C 68 33.4 68.4 33 69 33 Z" />
+
+    <!-- QR Corner Bottom-Left Outer Frame -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 28 62 L 44 62 C 45.1 62 46 62.9 46 64 L 46 80 C 46 81.1 45.1 82 44 82 L 28 82 C 26.9 82 26 81.1 26 80 L 26 64 C 26 62.9 26.9 62 28 62 Z M 30 66 L 30 78 L 42 78 L 42 66 Z" />
+    <!-- QR Corner Bottom-Left Inner Dot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 33 69 L 39 69 C 39.6 69 40 69.4 40 70 L 40 74 C 40 74.6 39.6 75 39 75 L 33 75 C 32.4 75 32 74.6 32 74 L 32 70 C 32 69.4 32.4 69 33 69 Z" />
+
+    <!-- QR Data Matrix Dots and Timing Patterns -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 50 26 L 56 26 L 56 32 L 50 32 Z M 52 36 L 56 36 L 56 46 L 52 46 Z M 50 50 L 56 50 L 56 56 L 50 56 Z M 60 50 L 68 50 L 68 56 L 60 56 Z M 72 50 L 82 50 L 82 56 L 72 56 Z M 26 50 L 34 50 L 34 56 L 26 56 Z M 38 50 L 46 50 L 46 56 L 38 56 Z M 50 62 L 56 62 L 56 70 L 50 70 Z M 62 62 L 70 62 L 70 68 L 62 68 Z M 74 62 L 82 62 L 82 72 L 74 72 Z M 52 74 L 60 74 L 60 82 L 52 82 Z M 64 74 L 72 74 L 72 82 L 64 82 Z M 76 76 L 82 76 L 82 82 L 76 82 Z" />
+</vector>

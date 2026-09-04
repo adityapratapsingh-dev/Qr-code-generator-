@@ -1,0 +1,6 @@
+{
+  "name": "QR Code Generator",
+  "description": "Professional QR Code Studio with Live Real-time Preview, Smart Presets (Wi-Fi, vCard, Email, SMS), Center Badges, Poster Frame, Vector SVG export, and private local generation history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Professional QR Code Studio with Live Real-time Preview, Smart Presets, Center Badges, Frame Posters, Vector SVG export, and private on-device generation." />
+  <title>QR Code Studio Pro • Smart Presets, Center Logos & Vector SVG</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans for ultra-clean modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              950: '#1e1b4b'
+            }
+          },
+          boxShadow: {
+            'glow-indigo': '0 0 35px -5px rgba(99, 102, 241, 0.25)',
+            'glow-emerald': '0 0 35px -5px rgba(16, 185, 129, 0.25)',
+            'card-sleek': '0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04)',
+            'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- QRCode.js Library via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22QR%20Code%20Studio%20Pro%22%2C%22short_name%22%3A%22QR%20Studio%22%2C%22description%22%3A%22Smart%20QR%20Code%20Studio%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%7D" />
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Ambient dynamic glow beneath QR card */
+    .ambient-glow {
+      position: absolute;
+      inset: -15px;
+      border-radius: 2.5rem;
+      filter: blur(28px);
+      opacity: 0.45;
+      z-index: 0;
+      transition: all 0.5s ease;
+      pointer-events: none;
+    }
+
+    /* QR Code styling */
+    #qrcode canvas, #qrcode img {
+      margin: 0 auto;
+      border-radius: 0.75rem;
+      max-width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+
+    /* Subtle Spring / Pop animation on QR generation */
+    .qr-pop {
+      animation: qrPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes qrPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Toast animation */
+    .toast-spring-in {
+      animation: toastIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .toast-spring-out {
+      animation: toastOut 0.22s ease-in forwards;
+    }
+
+    @keyframes toastIn {
+      0% { opacity: 0; transform: translateY(16px) scale(0.92); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toastOut {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(12px) scale(0.92); }
+    }
+
+    /* Custom smooth scrollbar */
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Pulse wave for live auto-generation indicator */
+    @keyframes livePulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.4); opacity: 0; }
+      100% { transform: scale(0.95); opacity: 0; }
+    }
+    .live-pulse {
+      animation: livePulse 2s infinite ease-out;
+    }
+
+    /* Scan Me Frame Brackets */
+    .frame-corner {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-color: currentColor;
+      pointer-events: none;
+    }
+    .frame-tl { top: 8px; left: 8px; border-top-width: 2.5px; border-left-width: 2.5px; border-top-left-radius: 4px; }
+    .frame-tr { top: 8px; right: 8px; border-top-width: 2.5px; border-right-width: 2.5px; border-top-right-radius: 4px; }
+    .frame-bl { bottom: 8px; left: 8px; border-bottom-width: 2.5px; border-left-width: 2.5px; border-bottom-left-radius: 4px; }
+    .frame-br { bottom: 8px; right: 8px; border-bottom-width: 2.5px; border-right-width: 2.5px; border-bottom-right-radius: 4px; }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center justify-between p-3 sm:p-6 md:p-8 antialiased selection:bg-brand-100 selection:text-brand-900 relative">
+
+  <!-- Background decorative light grids -->
+  <div class="fixed inset-0 pointer-events-none z-[-1] opacity-40 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+  <!-- Floating Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Header Bar -->
+  <header class="w-full max-w-2xl mx-auto flex items-center justify-between py-2 mb-3">
+    <div class="flex items-center space-x-3.5">
+      <!-- High-craft App Icon with glowing ring -->
+      <div class="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 ring-1 ring-white/20">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          <path d="M14 14h3v3h-3z"></path>
+          <path d="M20 14v3h-3"></path>
+          <path d="M14 20h7"></path>
+        </svg>
+        <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-white"></span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">QR Studio</h1>
+          <span class="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200/80 shadow-xs">PRO ULTRA</span>
+        </div>
+        <p class="text-xs text-slate-500 font-medium">Smart Presets • Center Badges • Vector SVG • 100% Private</p>
+      </div>
+    </div>
+
+    <!-- Live Preview Switch & Security Pill -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Live Toggle Pill -->
+      <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-xs cursor-pointer hover:border-brand-300 transition-colors select-none text-xs font-semibold text-slate-700" title="Auto-regenerate QR code as you type">
+        <span class="relative flex h-2 w-2">
+          <span id="live-dot-ping" class="live-pulse absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span id="live-dot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="text-[11px]">Live</span>
+        <input id="toggle-live-preview" type="checkbox" checked class="sr-only">
+      </label>
+
+      <!-- Zero Telemetry Badge -->
+      <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-xs">
+        <svg class="w-3.5 h-3.5 mr-1 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        Zero Telemetry
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Card Container -->
+  <main class="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-card-sleek p-5 sm:p-7 transition-all space-y-6">
+
+    <!-- 1. Smart Preset Format Selector -->
+    <div>
+      <div class="flex items-center justify-between mb-2.5">
+        <div class="flex items-center gap-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Smart Presets
+          </label>
+          <span id="active-template-name" class="text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200/60">
+            Website Link
+          </span>
+        </div>
+        <!-- Quick Demo Fill -->
+        <button id="demo-fill-btn" type="button" class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1 hover:underline">
+          <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          Try Sample Data
+        </button>
+      </div>
+
+      <!-- Preset Pills with Micro-animations -->
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/70">
+        <!-- URL Preset -->
+        <button type="button" data-preset="url" class="preset-tab active flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/70">
+          <svg class="w-4 h-4 mb-1 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+          </svg>
+          URL
+        </button>
+
+        <!-- Wi-Fi Preset -->
+        <button type="button" data-preset="wifi" class="preset-tab flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 hover:bg-white/70">
+          <svg class="w-4 h-4 mb-1 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.393 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+          </svg>
+          Wi-Fi
+        </button>
+
+        <!-- vCard Preset -->
+        <button type="button" data-preset="vcard" class="preset-tab flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 hover:bg-white/70">
+          <svg class="w-4 h-4 mb-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          Contact
+        </button>
+
+        <!-- Email Preset -->
+        <button type="button" data-preset="email" class="preset-tab flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 hover:bg-white/70">
+          <svg class="w-4 h-4 mb-1 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          Email
+        </button>
+
+        <!-- SMS Preset -->
+        <button type="button" data-preset="sms" class="preset-tab flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 hover:bg-white/70">
+          <svg class="w-4 h-4 mb-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+          </svg>
+          SMS
+        </button>
+
+        <!-- Text / Note Preset -->
+        <button type="button" data-preset="text" class="preset-tab flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 hover:bg-white/70">
+          <svg class="w-4 h-4 mb-1 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+          </svg>
+          Text
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Dynamic Input Fields for Active Preset -->
+    <div id="forms-container" class="space-y-3">
+      <!-- Form: URL -->
+      <div id="form-url" class="preset-form space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="block text-sm font-bold text-slate-800">Website or Web App URL</label>
+          <div class="flex items-center gap-2">
+            <button type="button" id="url-prefix-btn" class="text-xs text-slate-500 hover:text-brand-600 font-semibold px-2 py-0.5 rounded-md bg-slate-100 hover:bg-brand-50 transition-colors">+ https://</button>
+            <button type="button" id="paste-btn" class="text-xs text-brand-600 hover:text-brand-800 font-semibold flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              Paste
+            </button>
+          </div>
+        </div>
+        <div class="relative">
+          <input
+            id="input-url"
+            type="url"
+            class="w-full px-4 py-3 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition placeholder:text-slate-400 text-sm font-medium"
+            placeholder="https://example.com"
+            value="https://ai.studio"
+          />
+        </div>
+      </div>
+
+      <!-- Form: Wi-Fi -->
+      <div id="form-wifi" class="preset-form hidden space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Network Name (SSID)</label>
+            <input
+              id="input-wifi-ssid"
+              type="text"
+              class="w-full px-3.5 py-2.5 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition text-sm font-medium"
+              placeholder="e.g. Studio_HQ_5G"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+            <div class="relative">
+              <input
+                id="input-wifi-pass"
+                type="text"
+                class="w-full px-3.5 py-2.5 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition text-sm font-medium"
+                placeholder="Network Password"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500 font-semibold">Security:</span>
+            <select id="input-wifi-type" class="bg-slate-100 text-slate-700 text-xs font-bold py-1.5 px-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500">
+              <option value="WPA" selected>WPA / WPA2 / WPA3</option>
+              <option value="WEP">WEP</option>
+              <option value="nopass">None (Open Network)</option>
+            </select>
+          </div>
+          <label class="flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer">
+            <input id="input-wifi-hidden" type="checkbox" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300">
+            <span>Hidden Network</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Form: vCard Contact -->
+      <div id="form-vcard" class="preset-form hidden space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">First Name</label>
+            <input id="input-vcard-first" type="text" placeholder="Alex" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Last Name</label>
+            <input id="input-vcard-last" type="text" placeholder="Morgan" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+            <input id="input-vcard-phone" type="tel" placeholder="+1 (555) 234-5678" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+            <input id="input-vcard-email" type="email" placeholder="alex.morgan@company.com" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Company / Role</label>
+            <input id="input-vcard-org" type="text" placeholder="Design Director at Studio" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Form: Email -->
+      <div id="form-email" class="preset-form hidden space-y-3">
+        <div class="space-y-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Recipient Email</label>
+            <input id="input-email-to" type="email" placeholder="contact@creator.io" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Subject</label>
+            <input id="input-email-sub" type="text" placeholder="Project Inquiry / Collaboration" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Body Message</label>
+            <textarea id="input-email-body" rows="2" placeholder="Hi, let's connect regarding..." class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium resize-none"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form: SMS -->
+      <div id="form-sms" class="preset-form hidden space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+          <input id="input-sms-phone" type="tel" placeholder="+1 234 567 8900" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Pre-filled Message</label>
+          <textarea id="input-sms-msg" rows="2" placeholder="Send me the download link please!" class="w-full px-3.5 py-2 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium resize-none"></textarea>
+        </div>
+      </div>
+
+      <!-- Form: Plain Text -->
+      <div id="form-text" class="preset-form hidden space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="block text-sm font-bold text-slate-800">Plain Text / Serial Key / Memo</label>
+          <button id="clear-text-btn" type="button" class="text-xs text-slate-400 hover:text-slate-700 font-semibold">Clear</button>
+        </div>
+        <textarea
+          id="input-text-raw"
+          rows="3"
+          class="w-full px-4 py-3 text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-600 transition placeholder:text-slate-400 text-sm font-medium resize-none font-mono"
+          placeholder="Paste or type any raw text, API keys, promo tokens, or cryptographic digests..."
+        ></textarea>
+      </div>
+
+      <!-- Live Diagnostics / Real-time Spec Pill Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1 pt-1 text-[11px] text-slate-500 font-medium">
+        <div class="flex items-center gap-3">
+          <span id="char-count" class="font-mono text-slate-600 font-semibold">0 chars</span>
+          <span class="text-slate-300">•</span>
+          <span id="density-rating" class="text-emerald-600 font-semibold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Optimal Density
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5 text-slate-400">
+          <svg class="w-3.5 h-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+          </svg>
+          <span>Local Engine (Zero Network)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Styling & Customization Studio -->
+    <div class="pt-3 border-t border-slate-100 space-y-4">
+      <!-- Section: Color Palettes -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Color Palettes
+          </label>
+          <span class="text-[11px] text-slate-400 font-medium">Lossless vector & print ready</span>
+        </div>
+
+        <!-- 6 Preset Theme Swatches -->
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          <!-- Obsidian Classic -->
+          <button type="button" data-fg="#0f172a" data-bg="#ffffff" data-glow="rgba(15,23,42,0.15)" class="theme-swatch active flex items-center gap-2 p-2 rounded-xl border-2 border-brand-600 bg-brand-50/50 text-left transition-all shadow-xs">
+            <span class="w-5 h-5 rounded-lg bg-slate-900 border border-slate-200 shadow-xs flex-shrink-0"></span>
+            <span class="text-xs font-bold text-slate-800 truncate">Obsidian</span>
+          </button>
+
+          <!-- Electric Indigo -->
+          <button type="button" data-fg="#4338ca" data-bg="#ffffff" data-glow="rgba(67,56,202,0.2)" class="theme-swatch flex items-center gap-2 p-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-left transition-all shadow-xs">
+            <span class="w-5 h-5 rounded-lg bg-indigo-700 border border-slate-200 shadow-xs flex-shrink-0"></span>
+            <span class="text-xs font-semibold text-slate-800 truncate">Indigo</span>
+          </button>
+
+          <!-- Emerald Forest -->
+          <button type="button" data-fg="#047857" data-bg="#ffffff" data-glow="rgba(4,120,87,0.2)" class="theme-swatch flex items-center gap-2 p-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-left transition-all shadow-xs">
+            <span class="w-5 h-5 rounded-lg bg-emerald-700 border border-slate-200 shadow-xs flex-shrink-0"></span>
+            <span class="text-xs font-semibold text-slate-800 truncate">Emerald</span>
+          </button>
+
+          <!-- Sunset Amber -->
+          <button type="button" data-fg="#c2410c" data-bg="#ffffff" data-glow="rgba(194,65,12,0.2)" class="theme-swatch flex items-center gap-2 p-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-left transition-all shadow-xs">
+            <span class="w-5 h-5 rounded-lg bg-orange-700 border border-slate-200 shadow-xs flex-shrink-0"></span>
+            <span class="text-xs font-semibold text-slate-800 truncate">Sunset</span>
+          </button>
+
+          <!-- Royal Violet -->
+          <button type="button" data-fg="#6d28d9" data-bg="#ffffff" data-glow="rgba(109,40,217,0.2)" class="theme-swatch flex items-center gap-2 p-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-left transition-all shadow-xs">
+            <span class="w-5 h-5 rounded-lg bg-purple-700 border border-slate-200 shadow-xs flex-shrink-0"></span>
+            <span class="text-xs font-semibold text-slate-800 truncate">Violet</span>
+          </button>
+
+          <!-- Inverted Dark -->
+          <button type="button" data-fg="#ffffff" data-bg="#0f172a" data-glow="rgba(15,23,42,0.3)" class="theme-swatch flex items-center gap-2 p-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-left transition-all shadow-xs">
+            <span class="w-5 h-5 rounded-lg bg-slate-900 border-2 border-white shadow-xs flex-shrink-0"></span>
+            <span class="text-xs font-semibold text-slate-800 truncate">Inverted</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section: Center Emblem / Logo Overlays -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Center Emblem / Badge
+          </label>
+          <span class="text-[11px] text-slate-400 font-medium">Protected 30% ECC safe cutout</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" data-emblem="none" class="emblem-btn active px-3 py-1.5 rounded-xl border-2 border-brand-600 bg-brand-50 text-xs font-bold text-slate-900 transition-all">
+            None
+          </button>
+          <button type="button" data-emblem="link" class="emblem-btn px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs font-semibold text-slate-700 transition-all flex items-center gap-1.5">
+            <span>🔗</span> Link
+          </button>
+          <button type="button" data-emblem="wifi" class="emblem-btn px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs font-semibold text-slate-700 transition-all flex items-center gap-1.5">
+            <span>📶</span> Wi-Fi
+          </button>
+          <button type="button" data-emblem="contact" class="emblem-btn px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs font-semibold text-slate-700 transition-all flex items-center gap-1.5">
+            <span>👤</span> Contact
+          </button>
+          <button type="button" data-emblem="star" class="emblem-btn px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs font-semibold text-slate-700 transition-all flex items-center gap-1.5">
+            <span>⭐</span> Star
+          </button>
+          <button type="button" data-emblem="bolt" class="emblem-btn px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs font-semibold text-slate-700 transition-all flex items-center gap-1.5">
+            <span>⚡</span> Bolt
+          </button>
+          <button type="button" data-emblem="heart" class="emblem-btn px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-xs font-semibold text-slate-700 transition-all flex items-center gap-1.5">
+            <span>❤️</span> Heart
+          </button>
+        </div>
+      </div>
+
+      <!-- Fine-tune controls & Specs Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 text-xs pt-1 border-t border-slate-100">
+        <!-- Custom Colors -->
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-1.5 text-slate-700 font-semibold cursor-pointer">
+            <span>Foreground:</span>
+            <input type="color" id="custom-fg-color" value="#0f172a" class="w-6 h-6 rounded-md cursor-pointer border-0 bg-transparent">
+          </label>
+          <label class="flex items-center gap-1.5 text-slate-700 font-semibold cursor-pointer">
+            <span>Background:</span>
+            <input type="color" id="custom-bg-color" value="#ffffff" class="w-6 h-6 rounded-md cursor-pointer border-0 bg-transparent">
+          </label>
+        </div>
+
+        <!-- Frame / Poster Mode Toggle -->
+        <label class="flex items-center gap-2 text-slate-700 font-semibold cursor-pointer select-none">
+          <input id="toggle-frame" type="checkbox" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300">
+          <span>"Scan Me" Card Frame</span>
+        </label>
+
+        <!-- Resolution & ECC -->
+        <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-1">
+            <span class="text-slate-500 font-medium">Res:</span>
+            <select id="qr-size" class="bg-slate-100 text-slate-800 font-bold py-1 px-2 rounded-lg border border-slate-200 focus:outline-none">
+              <option value="512" selected>512px</option>
+              <option value="1024">1024px</option>
+              <option value="2048">2048px (Ultra)</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-slate-500 font-medium">ECC:</span>
+            <select id="qr-ecc" class="bg-slate-100 text-slate-800 font-bold py-1 px-2 rounded-lg border border-slate-200 focus:outline-none">
+              <option value="L">L (7%)</option>
+              <option value="M">M (15%)</option>
+              <option value="Q">Q (25%)</option>
+              <option value="H" selected>H (30%)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Generate Button (Instant trigger & tactile feel) -->
+      <button
+        id="generate-btn"
+        type="button"
+        class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-600 to-brand-700 hover:from-brand-700 hover:to-indigo-800 active:scale-[0.98] text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-600/30 hover:shadow-brand-600/45 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        <span>Generate &amp; Render QR Code</span>
+      </button>
+    </div>
+
+    <!-- 4. QR Output Card, Center Badge & Framed Layout -->
+    <div class="pt-6 border-t border-slate-100 flex flex-col items-center">
+      <!-- Ambient Backlight container -->
+      <div class="relative w-full max-w-[340px] flex justify-center">
+        <!-- Subtle dynamic glow matching active palette -->
+        <div id="ambient-glow" class="ambient-glow bg-indigo-500"></div>
+
+        <!-- The Canvas Frame Card -->
+        <div
+          id="qr-card"
+          class="relative z-10 w-full bg-white border border-slate-200/90 rounded-3xl p-5 flex flex-col items-center justify-center shadow-card-sleek transition-all duration-300"
+        >
+          <!-- Frame Header (Visible when "Scan Me" Frame is turned on) -->
+          <div id="frame-header" class="hidden mb-3 text-center">
+            <span class="text-[11px] font-extrabold tracking-widest uppercase text-slate-600 px-3 py-1 rounded-full bg-slate-100/80 border border-slate-200 inline-block">
+              Scan with Camera
+            </span>
+          </div>
+
+          <!-- The QR Code Display Area -->
+          <div class="relative flex items-center justify-center">
+            <!-- Corner Brackets for Scanner Aesthetic -->
+            <div id="frame-brackets" class="hidden text-slate-800">
+              <span class="frame-corner frame-tl"></span>
+              <span class="frame-corner frame-tr"></span>
+              <span class="frame-corner frame-bl"></span>
+              <span class="frame-corner frame-br"></span>
+            </div>
+
+            <!-- Placeholder Empty State -->
+            <div id="qr-placeholder" class="w-[220px] h-[220px] flex flex-col items-center justify-center text-center p-4">
+              <div class="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 mb-2.5">
+                <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                </svg>
+              </div>
+              <p class="text-xs font-bold text-slate-700">Ready to synthesize</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Your code will render instantaneously</p>
+            </div>
+
+            <!-- The Render Canvas -->
+            <div id="qrcode" class="hidden p-2 rounded-2xl relative"></div>
+
+            <!-- Embedded Center Badge Overlay (Rendered above canvas) -->
+            <div id="center-badge" class="hidden absolute inset-0 m-auto w-10 h-10 rounded-xl bg-white shadow-md border-2 border-white flex items-center justify-center text-base z-20 pointer-events-none transition-transform">
+              <span id="center-badge-icon">🔗</span>
+            </div>
+          </div>
+
+          <!-- Frame Footer (Visible when "Scan Me" is on) -->
+          <div id="frame-footer" class="hidden mt-3 text-center">
+            <p id="frame-footer-label" class="text-xs font-bold text-slate-800 truncate max-w-[200px]">ai.studio</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons: PNG & Vector SVG Export -->
+      <div id="result-actions" class="hidden w-full max-w-[340px] mt-4 flex flex-col gap-2.5">
+        <!-- Dual Export Primary Buttons: High-Res PNG and Vector SVG -->
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Download PNG -->
+          <button
+            id="download-png-btn"
+            type="button"
+            class="py-3 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>PNG Image</span>
+          </button>
+
+          <!-- Download Vector SVG -->
+          <button
+            id="download-svg-btn"
+            type="button"
+            class="py-3 px-3 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-600/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <svg class="w-4 h-4 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            <span>Vector SVG</span>
+          </button>
+        </div>
+
+        <!-- Secondary Action Row (Copy PNG, Copy Text, Print) -->
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            id="copy-image-btn"
+            type="button"
+            class="py-2.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            <span>Copy PNG</span>
+          </button>
+
+          <button
+            id="copy-text-btn"
+            type="button"
+            class="py-2.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <span>Copy Text</span>
+          </button>
+
+          <button
+            id="print-btn"
+            type="button"
+            class="py-2.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            <span>Print</span>
+          </button>
+        </div>
+
+        <p id="preview-meta" class="text-center text-[11px] text-slate-400 font-medium pt-1">
+          Lossless Scalable Vector &amp; High-Res PNG • Scan distance ~1.5m
+        </p>
+      </div>
+    </div>
+
+    <!-- 5. Local Generation History Section -->
+    <div class="pt-5 border-t border-slate-100 space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Recent Generation History
+          </label>
+          <span id="history-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-200/80">0</span>
+        </div>
+        <button id="clear-history-btn" type="button" class="text-xs text-rose-500 hover:text-rose-700 font-bold hidden">
+          Clear All
+        </button>
+      </div>
+
+      <!-- History List -->
+      <div id="history-list" class="space-y-2 max-h-56 overflow-y-auto custom-scroll pr-1">
+        <!-- Empty state placeholder -->
+        <div id="history-empty" class="text-center py-6 text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-slate-50/60">
+          <svg class="w-6 h-6 mx-auto mb-1.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-xs font-bold text-slate-600">No generation history yet</p>
+          <p class="text-[11px] text-slate-400">Generated codes are stored in local private browser storage</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer Features -->
+  <footer class="w-full max-w-2xl mx-auto mt-6 text-center text-xs text-slate-400 space-y-2">
+    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+      <span class="flex items-center gap-1.5 font-medium">
+        <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        Instant Local Synthesis
+      </span>
+      <span class="flex items-center gap-1.5 font-medium">
+        <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        Lossless Vector SVG
+      </span>
+      <span class="flex items-center gap-1.5 font-medium">
+        <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        Center Badges &amp; Frame Posters
+      </span>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script>
+    (function () {
+      'use strict';
+
+      // State
+      let activePreset = 'url';
+      let fgColor = '#0f172a';
+      let bgColor = '#ffffff';
+      let activeGlowColor = 'rgba(15,23,42,0.15)';
+      let activeEmblem = 'none';
+      let frameMode = false;
+      let livePreview = true;
+      let lastGeneratedText = '';
+      let lastGeneratedTitle = 'Website';
+      let currentQRCodeInstance = null;
+      let liveDebounceTimer = null;
+      const HISTORY_STORAGE_KEY = 'qr_studio_history_v3';
+
+      // Elements
+      const presetTabs = document.querySelectorAll('.preset-tab');
+      const presetForms = document.querySelectorAll('.preset-form');
+      const activeTemplateName = document.getElementById('active-template-name');
+      const charCountEl = document.getElementById('char-count');
+      const densityRatingEl = document.getElementById('density-rating');
+      const generateBtn = document.getElementById('generate-btn');
+      const demoFillBtn = document.getElementById('demo-fill-btn');
+      const toggleLivePreview = document.getElementById('toggle-live-preview');
+      const toggleFrame = document.getElementById('toggle-frame');
+      const ambientGlow = document.getElementById('ambient-glow');
+
+      const qrCard = document.getElementById('qr-card');
+      const qrPlaceholder = document.getElementById('qr-placeholder');
+      const qrCodeContainer = document.getElementById('qrcode');
+      const centerBadge = document.getElementById('center-badge');
+      const centerBadgeIcon = document.getElementById('center-badge-icon');
+      const frameHeader = document.getElementById('frame-header');
+      const frameFooter = document.getElementById('frame-footer');
+      const frameFooterLabel = document.getElementById('frame-footer-label');
+      const frameBrackets = document.getElementById('frame-brackets');
+      const resultActions = document.getElementById('result-actions');
+      const previewMeta = document.getElementById('preview-meta');
+
+      const downloadPngBtn = document.getElementById('download-png-btn');
+      const downloadSvgBtn = document.getElementById('download-svg-btn');
+      const copyImageBtn = document.getElementById('copy-image-btn');
+      const copyTextBtn = document.getElementById('copy-text-btn');
+      const printBtn = document.getElementById('print-btn');
+      const pasteBtn = document.getElementById('paste-btn');
+      const urlPrefixBtn = document.getElementById('url-prefix-btn');
+      const clearTextBtn = document.getElementById('clear-text-btn');
+
+      const qrSizeSelect = document.getElementById('qr-size');
+      const qrEccSelect = document.getElementById('qr-ecc');
+      const themeSwatches = document.querySelectorAll('.theme-swatch');
+      const emblemBtns = document.querySelectorAll('.emblem-btn');
+      const customFgColor = document.getElementById('custom-fg-color');
+      const customBgColor = document.getElementById('custom-bg-color');
+
+      const historyListEl = document.getElementById('history-list');
+      const historyEmptyEl = document.getElementById('history-empty');
+      const historyCountBadge = document.getElementById('history-count-badge');
+      const clearHistoryBtn = document.getElementById('clear-history-btn');
+      const toastContainer = document.getElementById('toast-container');
+
+      // Toast Notifications
+      function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = 'toast-spring-in px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg text-white flex items-center gap-2 pointer-events-auto ' +
+          (type === 'success' ? 'bg-slate-900 border border-slate-700/80 shadow-slate-900/30' : 'bg-rose-600 shadow-rose-600/30');
+
+        const iconSvg = type === 'success'
+          ? `<svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`
+          : `<svg class="w-4 h-4 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+        toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+          toast.classList.remove('toast-spring-in');
+          toast.classList.add('toast-spring-out');
+          setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 240);
+        }, 2500);
+      }
+
+      // Template Titles
+      const templateTitles = {
+        url: 'Website Link',
+        wifi: 'Wi-Fi Network',
+        vcard: 'vCard Contact',
+        email: 'Email Message',
+        sms: 'SMS Message',
+        text: 'Plain Text'
+      };
+
+      // Preset Switching
+      function switchPreset(preset) {
+        activePreset = preset;
+        activeTemplateName.textContent = templateTitles[preset] || 'Template';
+
+        presetTabs.forEach(tab => {
+          if (tab.dataset.preset === preset) {
+            tab.className = 'preset-tab active flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/70';
+          } else {
+            tab.className = 'preset-tab flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 hover:bg-white/70';
+          }
+        });
+
+        presetForms.forEach(form => {
+          if (form.id === `form-${preset}`) {
+            form.classList.remove('hidden');
+          } else {
+            form.classList.add('hidden');
+          }
+        });
+
+        updateCharCount();
+        if (livePreview) queueLiveUpdate();
+      }
+
+      presetTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          switchPreset(tab.dataset.preset);
+        });
+      });
+
+      // Construct payload according to active preset
+      function getPayloadData() {
+        switch (activePreset) {
+          case 'url': {
+            const url = document.getElementById('input-url').value.trim();
+            return {
+              text: url,
+              title: url.replace(/^https?:\/\//i, '').slice(0, 24) || 'Website',
+              type: 'URL'
+            };
+          }
+          case 'wifi': {
+            const ssid = document.getElementById('input-wifi-ssid').value.trim();
+            const pass = document.getElementById('input-wifi-pass').value;
+            const type = document.getElementById('input-wifi-type').value;
+            const hidden = document.getElementById('input-wifi-hidden').checked;
+            if (!ssid) return { text: '', title: 'Wi-Fi', type: 'Wi-Fi' };
+            const encoded = `WIFI:S:${ssid};T:${type};P:${pass};H:${hidden};;`;
+            return {
+              text: encoded,
+              title: `Wi-Fi: ${ssid}`,
+              type: 'Wi-Fi'
+            };
+          }
+          case 'vcard': {
+            const first = document.getElementById('input-vcard-first').value.trim();
+            const last = document.getElementById('input-vcard-last').value.trim();
+            const phone = document.getElementById('input-vcard-phone').value.trim();
+            const email = document.getElementById('input-vcard-email').value.trim();
+            const org = document.getElementById('input-vcard-org').value.trim();
+            const fullName = `${first} ${last}`.trim() || phone || email;
+            if (!fullName) return { text: '', title: 'Contact', type: 'Contact' };
+
+            const vcard = [
+              'BEGIN:VCARD',
+              'VERSION:3.0',
+              `N:${last};${first};;;`,
+              `FN:${fullName}`,
+              org ? `ORG:${org}` : '',
+              phone ? `TEL;TYPE=CELL:${phone}` : '',
+              email ? `EMAIL:${email}` : '',
+              'END:VCARD'
+            ].filter(Boolean).join('\n');
+
+            return {
+              text: vcard,
+              title: fullName || 'Contact vCard',
+              type: 'Contact'
+            };
+          }
+          case 'email': {
+            const to = document.getElementById('input-email-to').value.trim();
+            const sub = document.getElementById('input-email-sub').value.trim();
+            const body = document.getElementById('input-email-body').value.trim();
+            if (!to) return { text: '', title: 'Email', type: 'Email' };
+            const params = [];
+            if (sub) params.push(`subject=${encodeURIComponent(sub)}`);
+            if (body) params.push(`body=${encodeURIComponent(body)}`);
+            const mailto = `mailto:${to}${params.length ? '?' + params.join('&') : ''}`;
+            return {
+              text: mailto,
+              title: `Email: ${to}`,
+              type: 'Email'
+            };
+          }
+          case 'sms': {
+            const phone = document.getElementById('input-sms-phone').value.trim();
+            const msg = document.getElementById('input-sms-msg').value.trim();
+            if (!phone) return { text: '', title: 'SMS', type: 'SMS' };
+            const sms = `smsto:${phone}${msg ? ':' + msg : ''}`;
+            return {
+              text: sms,
+              title: `SMS: ${phone}`,
+              type: 'SMS'
+            };
+          }
+          case 'text':
+          default: {
+            const raw = document.getElementById('input-text-raw').value.trim();
+            return {
+              text: raw,
+              title: raw.slice(0, 24) || 'Text',
+              type: 'Text'
+            };
+          }
+        }
+      }
+
+      function updateCharCount() {
+        const payload = getPayloadData();
+        const len = payload.text.length;
+        charCountEl.textContent = `${len} char${len === 1 ? '' : 's'}`;
+
+        if (len === 0) {
+          densityRatingEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Empty`;
+          densityRatingEl.className = 'text-slate-400 font-semibold flex items-center gap-1';
+        } else if (len < 80) {
+          densityRatingEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Optimal Scan Density`;
+          densityRatingEl.className = 'text-emerald-600 font-semibold flex items-center gap-1';
+        } else if (len < 250) {
+          densityRatingEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Balanced Density`;
+          densityRatingEl.className = 'text-blue-600 font-semibold flex items-center gap-1';
+        } else {
+          densityRatingEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Dense Matrix`;
+          densityRatingEl.className = 'text-amber-600 font-semibold flex items-center gap-1';
+        }
+      }
+
+      // Quick Demo Fill Button
+      demoFillBtn.addEventListener('click', () => {
+        switch (activePreset) {
+          case 'url':
+            document.getElementById('input-url').value = 'https://ai.studio/build';
+            break;
+          case 'wifi':
+            document.getElementById('input-wifi-ssid').value = 'Studio_5GHz_HighSpeed';
+            document.getElementById('input-wifi-pass').value = 'SuperSecret2026!';
+            document.getElementById('input-wifi-type').value = 'WPA';
+            break;
+          case 'vcard':
+            document.getElementById('input-vcard-first').value = 'Jordan';
+            document.getElementById('input-vcard-last').value = 'Hayes';
+            document.getElementById('input-vcard-phone').value = '+1 (415) 555-0182';
+            document.getElementById('input-vcard-email').value = 'jordan.hayes@company.io';
+            document.getElementById('input-vcard-org').value = 'Head of Product Design';
+            break;
+          case 'email':
+            document.getElementById('input-email-to').value = 'hello@example.org';
+            document.getElementById('input-email-sub').value = 'Partnership Opportunity';
+            document.getElementById('input-email-body').value = 'Excited to discuss collaborating on our upcoming launch!';
+            break;
+          case 'sms':
+            document.getElementById('input-sms-phone').value = '+1 (202) 555-0143';
+            document.getElementById('input-sms-msg').value = 'Confirming reservation for 7:30 PM tonight.';
+            break;
+          case 'text':
+            document.getElementById('input-text-raw').value = 'CONFIDENTIAL-PASSKEY-8837-XJ92-2026';
+            break;
+        }
+        updateCharCount();
+        generateQRCode();
+        showToast(`Loaded demo for ${templateTitles[activePreset]}`);
+      });
+
+      // Live debounced generator
+      function queueLiveUpdate() {
+        if (!livePreview) return;
+        clearTimeout(liveDebounceTimer);
+        liveDebounceTimer = setTimeout(() => {
+          const p = getPayloadData();
+          if (p.text && p.text !== lastGeneratedText) {
+            generateQRCode(false); // don't push every keypress to history
+          }
+        }, 140);
+      }
+
+      // Input change listeners
+      document.querySelectorAll('#forms-container input, #forms-container textarea, #forms-container select').forEach(el => {
+        el.addEventListener('input', () => {
+          updateCharCount();
+          queueLiveUpdate();
+        });
+        el.addEventListener('change', () => {
+          updateCharCount();
+          queueLiveUpdate();
+        });
+      });
+
+      // Live switch toggle
+      toggleLivePreview.addEventListener('change', (e) => {
+        livePreview = e.target.checked;
+        const ping = document.getElementById('live-dot-ping');
+        const dot = document.getElementById('live-dot');
+        if (livePreview) {
+          ping.classList.remove('hidden');
+          dot.classList.add('bg-emerald-500');
+          dot.classList.remove('bg-slate-300');
+          showToast('Real-time live preview enabled');
+          queueLiveUpdate();
+        } else {
+          ping.classList.add('hidden');
+          dot.classList.remove('bg-emerald-500');
+          dot.classList.add('bg-slate-300');
+          showToast('Live preview paused');
+        }
+      });
+
+      // Frame Mode Toggle
+      toggleFrame.addEventListener('change', (e) => {
+        frameMode = e.target.checked;
+        applyFrameStyle();
+      });
+
+      function applyFrameStyle() {
+        if (frameMode) {
+          frameHeader.classList.remove('hidden');
+          frameFooter.classList.remove('hidden');
+          frameBrackets.classList.remove('hidden');
+          frameFooterLabel.textContent = lastGeneratedTitle || 'SCAN ME';
+          qrCard.classList.add('p-6', 'ring-2', 'ring-slate-900/10');
+        } else {
+          frameHeader.classList.add('hidden');
+          frameFooter.classList.add('hidden');
+          frameBrackets.classList.add('hidden');
+          qrCard.classList.remove('p-6', 'ring-2', 'ring-slate-900/10');
+        }
+      }
+
+      // Quick helpers
+      if (urlPrefixBtn) {
+        urlPrefixBtn.addEventListener('click', () => {
+          const input = document.getElementById('input-url');
+          if (!input.value.startsWith('http://') && !input.value.startsWith('https://')) {
+            input.value = 'https://' + input.value;
+          }
+          updateCharCount();
+          queueLiveUpdate();
+          input.focus();
+        });
+      }
+
+      if (pasteBtn) {
+        pasteBtn.addEventListener('click', async () => {
+          try {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+              const clip = await navigator.clipboard.readText();
+              if (clip) {
+                document.getElementById('input-url').value = clip;
+                updateCharCount();
+                generateQRCode();
+                showToast('Pasted URL from clipboard');
+              }
+            }
+          } catch (e) {
+            document.getElementById('input-url').focus();
+          }
+        });
+      }
+
+      if (clearTextBtn) {
+        clearTextBtn.addEventListener('click', () => {
+          document.getElementById('input-text-raw').value = '';
+          updateCharCount();
+          queueLiveUpdate();
+        });
+      }
+
+      // Color Theme Selection
+      themeSwatches.forEach(swatch => {
+        swatch.addEventListener('click', () => {
+          themeSwatches.forEach(s => {
+            s.classList.remove('border-brand-600', 'border-2', 'bg-brand-50/50');
+            s.classList.add('border-slate-200');
+          });
+          swatch.classList.remove('border-slate-200');
+          swatch.classList.add('border-brand-600', 'border-2', 'bg-brand-50/50');
+
+          fgColor = swatch.dataset.fg;
+          bgColor = swatch.dataset.bg;
+          activeGlowColor = swatch.dataset.glow || 'rgba(99,102,241,0.2)';
+          customFgColor.value = fgColor;
+          customBgColor.value = bgColor;
+
+          ambientGlow.style.backgroundColor = activeGlowColor;
+
+          if (lastGeneratedText) renderQR();
+        });
+      });
+
+      customFgColor.addEventListener('input', (e) => {
+        fgColor = e.target.value;
+        if (lastGeneratedText) renderQR();
+      });
+
+      customBgColor.addEventListener('input', (e) => {
+        bgColor = e.target.value;
+        if (lastGeneratedText) renderQR();
+      });
+
+      // Emblem selection
+      const emblemIcons = {
+        none: '',
+        link: '🔗',
+        wifi: '📶',
+        contact: '👤',
+        star: '⭐',
+        bolt: '⚡',
+        heart: '❤️'
+      };
+
+      emblemBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          emblemBtns.forEach(b => {
+            b.classList.remove('border-brand-600', 'border-2', 'bg-brand-50', 'text-slate-900');
+            b.classList.add('border-slate-200', 'text-slate-700');
+          });
+          btn.classList.remove('border-slate-200', 'text-slate-700');
+          btn.classList.add('border-brand-600', 'border-2', 'bg-brand-50', 'text-slate-900');
+
+          activeEmblem = btn.dataset.emblem;
+          updateEmblemOverlay();
+          if (lastGeneratedText) renderQR();
+        });
+      });
+
+      function updateEmblemOverlay() {
+        if (activeEmblem === 'none') {
+          centerBadge.classList.add('hidden');
+        } else {
+          centerBadgeIcon.textContent = emblemIcons[activeEmblem] || '';
+          centerBadge.classList.remove('hidden');
+        }
+      }
+
+      // Map ECC strings
+      function getEccLevel(level) {
+        if (typeof QRCode === 'undefined') return 2;
+        switch (level) {
+          case 'L': return QRCode.CorrectLevel.L;
+          case 'M': return QRCode.CorrectLevel.M;
+          case 'Q': return QRCode.CorrectLevel.Q;
+          case 'H':
+          default:
+            return QRCode.CorrectLevel.H;
+        }
+      }
+
+      // Core Render QR Function
+      function renderQR() {
+        qrCodeContainer.innerHTML = '';
+        const displaySize = Math.min(240, Math.max(180, window.innerWidth - 120));
+        const ecc = getEccLevel(qrEccSelect.value);
+
+        try {
+          currentQRCodeInstance = new QRCode(qrCodeContainer, {
+            text: lastGeneratedText,
+            width: displaySize,
+            height: displaySize,
+            colorDark: fgColor,
+            colorLight: bgColor,
+            correctLevel: ecc
+          });
+
+          qrCodeContainer.style.backgroundColor = bgColor;
+
+          qrPlaceholder.classList.add('hidden');
+          qrCodeContainer.classList.remove('hidden');
+          resultActions.classList.remove('hidden');
+
+          updateEmblemOverlay();
+          applyFrameStyle();
+
+          const res = qrSizeSelect.value;
+          previewMeta.textContent = `${res}×${res}px PNG & Vector SVG • Level ${qrEccSelect.value} ECC (30% Tolerant)`;
+
+          qrCodeContainer.classList.remove('qr-pop');
+          void qrCodeContainer.offsetWidth;
+          qrCodeContainer.classList.add('qr-pop');
+        } catch (err) {
+          console.error('Render QR error:', err);
+          showToast('Failed to render code. Content might be too large.', 'error');
+        }
+      }
+
+      // Generation trigger
+      function generateQRCode(pushToHistory = true) {
+        const payload = getPayloadData();
+        if (!payload.text) {
+          showToast('Please enter content to generate', 'error');
+          return;
+        }
+
+        if (typeof QRCode === 'undefined') {
+          showToast('Engine loading, please retry', 'error');
+          return;
+        }
+
+        lastGeneratedText = payload.text;
+        lastGeneratedTitle = payload.title;
+
+        renderQR();
+
+        if (pushToHistory) {
+          saveToHistory(payload.text, payload.title, payload.type);
+        }
+      }
+
+      generateBtn.addEventListener('click', () => {
+        generateQRCode(true);
+        showToast('Generated QR code');
+      });
+
+      // High-resolution Canvas for PNG export
+      function getHighResCanvas(targetResolution) {
+        return new Promise((resolve, reject) => {
+          const originalCanvas = qrCodeContainer.querySelector('canvas');
+          const originalImg = qrCodeContainer.querySelector('img');
+
+          if (!originalCanvas && !originalImg) {
+            reject(new Error('QR Code element not found'));
+            return;
+          }
+
+          const exportSize = targetResolution || 1024;
+          const padding = Math.round(exportSize * 0.08); // 8% quiet zone
+          const contentSize = exportSize - (padding * 2);
+
+          const exportCanvas = document.createElement('canvas');
+          exportCanvas.width = exportSize;
+          exportCanvas.height = exportSize;
+          const ctx = exportCanvas.getContext('2d');
+
+          // Fill Background
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, exportSize, exportSize);
+
+          const drawCenterLogoIfNeeded = () => {
+            if (activeEmblem !== 'none' && emblemIcons[activeEmblem]) {
+              const badgeSize = Math.round(exportSize * 0.18);
+              const badgeX = (exportSize - badgeSize) / 2;
+              const badgeY = (exportSize - badgeSize) / 2;
+              const radius = Math.round(badgeSize * 0.28);
+
+              // Draw white cutout badge
+              ctx.fillStyle = '#ffffff';
+              ctx.beginPath();
+              ctx.roundRect(badgeX, badgeY, badgeSize, badgeSize, radius);
+              ctx.fill();
+              ctx.lineWidth = Math.max(3, Math.round(exportSize * 0.006));
+              ctx.strokeStyle = '#e2e8f0';
+              ctx.stroke();
+
+              // Draw emoji/text icon in center
+              ctx.font = `${Math.round(badgeSize * 0.55)}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(emblemIcons[activeEmblem], exportSize / 2, exportSize / 2 + 2);
+            }
+          };
+
+          if (originalCanvas) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(originalCanvas, padding, padding, contentSize, contentSize);
+            drawCenterLogoIfNeeded();
+            resolve(exportCanvas);
+          } else if (originalImg) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              ctx.imageSmoothingEnabled = false;
+              ctx.drawImage(img, padding, padding, contentSize, contentSize);
+              drawCenterLogoIfNeeded();
+              resolve(exportCanvas);
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = originalImg.src;
+          }
+        });
+      }
+
+      // Generate Scalable Vector Graphics (SVG) with optional center emblem cutout
+      function generateSVGString() {
+        if (!currentQRCodeInstance) return null;
+
+        const oQRCode = currentQRCodeInstance._oQRCode;
+        if (oQRCode && typeof oQRCode.getModuleCount === 'function') {
+          const count = oQRCode.getModuleCount();
+          const margin = 3; // 3 module quiet zone
+          const totalSize = count + (margin * 2);
+
+          // Calculate center cutout zone if emblem active
+          const emblemActive = activeEmblem !== 'none' && emblemIcons[activeEmblem];
+          const centerMin = Math.floor(count * 0.38);
+          const centerMax = Math.ceil(count * 0.62);
+
+          let pathD = '';
+          for (let row = 0; row < count; row++) {
+            for (let col = 0; col < count; col++) {
+              if (emblemActive && row >= centerMin && row <= centerMax && col >= centerMin && col <= centerMax) {
+                // skip to keep center clean for emblem
+                continue;
+              }
+              if (oQRCode.isDark(row, col)) {
+                pathD += `M${col + margin},${row + margin}h1v1h-1z `;
+              }
+            }
+          }
+
+          let emblemSvg = '';
+          if (emblemActive) {
+            const bSize = (centerMax - centerMin + 1) + 0.4;
+            const bX = centerMin + margin - 0.2;
+            const bY = centerMin + margin - 0.2;
+            const icon = emblemIcons[activeEmblem];
+            emblemSvg = `
+  <rect x="${bX}" y="${bY}" width="${bSize}" height="${bSize}" rx="1.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.2"/>
+  <text x="${bX + (bSize / 2)}" y="${bY + (bSize / 2) + 0.5}" font-size="${bSize * 0.6}" text-anchor="middle" dominant-baseline="middle">${icon}</text>`;
+          }
+
+          return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalSize} ${totalSize}" width="1024" height="1024" shape-rendering="crispEdges">
+  <rect width="100%" height="100%" fill="${bgColor}"/>
+  <path fill="${fgColor}" d="${pathD.trim()}"/>${emblemSvg}
+</svg>`;
+        }
+
+        // Fallback canvas matrix scanner
+        const canvas = qrCodeContainer.querySelector('canvas');
+        if (!canvas) return null;
+        const ctx = canvas.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const w = canvas.width;
+        const h = canvas.height;
+
+        let sampleY = Math.floor(h / 2);
+        let transitions = 0;
+        let lastPix = imgData.data[sampleY * w * 4];
+        for (let x = 0; x < w; x++) {
+          let curPix = imgData.data[(sampleY * w + x) * 4];
+          if (curPix !== lastPix) {
+            transitions++;
+            lastPix = curPix;
+          }
+        }
+        let estModules = Math.max(21, Math.round(transitions * 1.5));
+        let cellSize = w / estModules;
+        let margin = 2;
+        let total = estModules + margin * 2;
+        let pathD = '';
+
+        for (let r = 0; r < estModules; r++) {
+          for (let c = 0; c < estModules; c++) {
+            let px = Math.floor((c + 0.5) * cellSize);
+            let py = Math.floor((r + 0.5) * cellSize);
+            let idx = (py * w + px) * 4;
+            let isDark = (imgData.data[idx] + imgData.data[idx + 1] + imgData.data[idx + 2]) < 380;
+            if (isDark) {
+              pathD += `M${c + margin},${r + margin}h1v1h-1z `;
+            }
+          }
+        }
+
+        return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="1024" height="1024" shape-rendering="crispEdges">
+  <rect width="100%" height="100%" fill="${bgColor}"/>
+  <path fill="${fgColor}" d="${pathD.trim()}"/>
+</svg>`;
+      }
+
+      // Download PNG
+      downloadPngBtn.addEventListener('click', async () => {
+        try {
+          downloadPngBtn.disabled = true;
+          const targetRes = parseInt(qrSizeSelect.value, 10) || 512;
+          const canvas = await getHighResCanvas(targetRes);
+          const safeName = (lastGeneratedTitle || 'qr_code')
+            .replace(/[^a-z0-9]/gi, '_')
+            .toLowerCase()
+            .slice(0, 18);
+          const filename = `qr_${safeName}_${targetRes}px.png`;
+
+          const dataUrl = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast(`Downloaded ${filename}`);
+        } catch (e) {
+          console.error(e);
+          showToast('Failed to export PNG', 'error');
+        } finally {
+          downloadPngBtn.disabled = false;
+        }
+      });
+
+      // Download Vector SVG
+      downloadSvgBtn.addEventListener('click', () => {
+        try {
+          const svgContent = generateSVGString();
+          if (!svgContent) {
+            showToast('SVG could not be generated', 'error');
+            return;
+          }
+
+          const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const safeName = (lastGeneratedTitle || 'vector_qr')
+            .replace(/[^a-z0-9]/gi, '_')
+            .toLowerCase()
+            .slice(0, 18);
+          const filename = `qr_${safeName}_vector.svg`;
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          showToast(`Downloaded Vector ${filename}`);
+        } catch (e) {
+          console.error(e);
+          showToast('Failed to export SVG', 'error');
+        }
+      });
+
+      // Copy PNG Image to Clipboard
+      copyImageBtn.addEventListener('click', async () => {
+        try {
+          if (!navigator.clipboard || !window.ClipboardItem) {
+            showToast('Image clipboard not supported in this browser', 'error');
+            return;
+          }
+          const canvas = await getHighResCanvas(512);
+          canvas.toBlob(async (blob) => {
+            if (!blob) return;
+            try {
+              await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+              showToast('Copied QR Image to clipboard');
+            } catch (err) {
+              showToast('Could not copy image directly', 'error');
+            }
+          }, 'image/png');
+        } catch (e) {
+          showToast('Copy failed', 'error');
+        }
+      });
+
+      // Copy Raw Text
+      copyTextBtn.addEventListener('click', async () => {
+        try {
+          if (lastGeneratedText) {
+            await navigator.clipboard.writeText(lastGeneratedText);
+            showToast('Copied content to clipboard');
+          }
+        } catch (e) {
+          showToast('Could not copy text', 'error');
+        }
+      });
+
+      // Print Action
+      printBtn.addEventListener('click', async () => {
+        try {
+          const canvas = await getHighResCanvas(600);
+          const dataUrl = canvas.toDataURL('image/png');
+          const printWindow = window.open('', '_blank');
+          if (printWindow) {
+            printWindow.document.write(`
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <title>Print QR Code - ${escapeHtml(lastGeneratedTitle)}</title>
+                <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+                  .card { border: 2px solid #0f172a; border-radius: 24px; padding: 28px; text-align: center; max-width: 380px; }
+                  img { max-width: 300px; height: auto; border-radius: 12px; }
+                  h2 { margin: 0 0 12px; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+                  p { color: #64748b; font-size: 12px; margin: 12px 0 0; word-break: break-all; }
+                  .scan-tag { display: inline-block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #4338ca; background: #eef2ff; padding: 4px 12px; border-radius: 9999px; margin-bottom: 12px; }
+                </style>
+              </head>
+              <body>
+                <div class="card">
+                  <span class="scan-tag">Scan with Camera</span>
+                  <h2>${escapeHtml(lastGeneratedTitle)}</h2>
+                  <img src="${dataUrl}" alt="QR Code" />
+                  <p>${escapeHtml(lastGeneratedText)}</p>
+                </div>
+                <script>window.onload = () => { window.print(); window.close(); };<\/script>
+              </body>
+              </html>
+            `);
+            printWindow.document.close();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      // Local Generation History
+      function getHistory() {
+        try {
+          const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveToHistory(text, title, type) {
+        try {
+          const history = getHistory();
+          const filtered = history.filter(item => item.text !== text);
+          filtered.unshift({
+            id: 'qr_' + Date.now(),
+            title: title || 'QR Code',
+            type: type || 'Content',
+            text: text,
+            fg: fgColor,
+            bg: bgColor,
+            emblem: activeEmblem,
+            timestamp: Date.now()
+          });
+          const capped = filtered.slice(0, 20);
+          localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(capped));
+          renderHistoryUI();
+        } catch (e) {
+          console.warn('LocalStorage unavailable:', e);
+        }
+      }
+
+      function deleteHistoryItem(id) {
+        const history = getHistory().filter(item => item.id !== id);
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+        renderHistoryUI();
+        showToast('Removed item from history');
+      }
+
+      function clearAllHistory() {
+        localStorage.removeItem(HISTORY_STORAGE_KEY);
+        renderHistoryUI();
+        showToast('History cleared');
+      }
+
+      function loadFromHistory(item) {
+        fgColor = item.fg || '#0f172a';
+        bgColor = item.bg || '#ffffff';
+        customFgColor.value = fgColor;
+        customBgColor.value = bgColor;
+
+        if (item.type === 'URL') {
+          switchPreset('url');
+          document.getElementById('input-url').value = item.text;
+        } else if (item.type === 'Wi-Fi') {
+          switchPreset('wifi');
+          const matchSSID = item.text.match(/S:([^;]+)/);
+          const matchPass = item.text.match(/P:([^;]+)/);
+          const matchType = item.text.match(/T:([^;]+)/);
+          if (matchSSID) document.getElementById('input-wifi-ssid').value = matchSSID[1];
+          if (matchPass) document.getElementById('input-wifi-pass').value = matchPass[1];
+          if (matchType) document.getElementById('input-wifi-type').value = matchType[1];
+        } else {
+          switchPreset('text');
+          document.getElementById('input-text-raw').value = item.text;
+        }
+
+        if (item.emblem && emblemIcons[item.emblem]) {
+          activeEmblem = item.emblem;
+          emblemBtns.forEach(b => {
+            if (b.dataset.emblem === activeEmblem) {
+              b.classList.add('border-brand-600', 'border-2', 'bg-brand-50');
+            } else {
+              b.classList.remove('border-brand-600', 'border-2', 'bg-brand-50');
+            }
+          });
+        }
+
+        lastGeneratedText = item.text;
+        lastGeneratedTitle = item.title;
+        renderQR();
+        showToast(`Loaded "${item.title}"`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function timeAgo(ms) {
+        const diff = Math.floor((Date.now() - ms) / 1000);
+        if (diff < 60) return 'Just now';
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+        return `${Math.floor(diff / 86400)}d ago`;
+      }
+
+      function renderHistoryUI() {
+        const history = getHistory();
+        historyCountBadge.textContent = history.length;
+
+        if (history.length === 0) {
+          historyEmptyEl.classList.remove('hidden');
+          clearHistoryBtn.classList.add('hidden');
+          historyListEl.innerHTML = '';
+          historyListEl.appendChild(historyEmptyEl);
+          return;
+        }
+
+        historyEmptyEl.classList.add('hidden');
+        clearHistoryBtn.classList.remove('hidden');
+        historyListEl.innerHTML = '';
+
+        history.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'group flex items-center justify-between p-2.5 rounded-2xl border border-slate-100 hover:border-slate-200/90 bg-white hover:bg-slate-50/80 shadow-xs transition-all text-xs';
+
+          const badgeColors = {
+            'URL': 'bg-brand-50 text-brand-700 border-brand-200/60',
+            'Wi-Fi': 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
+            'Contact': 'bg-blue-50 text-blue-700 border-blue-200/60',
+            'Email': 'bg-amber-50 text-amber-700 border-amber-200/60',
+            'SMS': 'bg-indigo-50 text-indigo-700 border-indigo-200/60',
+            'Text': 'bg-slate-100 text-slate-700 border-slate-200/60'
+          };
+          const badgeClass = badgeColors[item.type] || 'bg-slate-100 text-slate-700 border-slate-200/60';
+
+          row.innerHTML = `
+            <div class="flex items-center gap-2.5 min-w-0 pr-2">
+              <span class="w-3.5 h-3.5 rounded-full flex-shrink-0 shadow-xs" style="background-color: ${item.fg}; border: 1.5px solid ${item.bg === '#ffffff' ? '#e2e8f0' : item.bg};"></span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="px-1.5 py-0.2 text-[10px] font-extrabold rounded-md border ${badgeClass}">${item.type}</span>
+                  <span class="font-bold text-slate-800 truncate">${escapeHtml(item.title)}</span>
+                </div>
+                <p class="text-[11px] text-slate-400 truncate max-w-[240px] sm:max-w-xs font-mono">${escapeHtml(item.text)}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <span class="text-[10px] text-slate-400 mr-1 hidden sm:inline">${timeAgo(item.timestamp)}</span>
+              <button type="button" data-action="load" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="Restore in editor">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </button>
+              <button type="button" data-action="copy" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 rounded-lg transition-colors" title="Copy text">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+              </button>
+              <button type="button" data-action="delete" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          `;
+
+          row.querySelector('[data-action="load"]').addEventListener('click', () => loadFromHistory(item));
+          row.querySelector('[data-action="copy"]').addEventListener('click', async () => {
+            await navigator.clipboard.writeText(item.text);
+            showToast('Copied content to clipboard');
+          });
+          row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteHistoryItem(item.id));
+
+          historyListEl.appendChild(row);
+        });
+      }
+
+      clearHistoryBtn.addEventListener('click', () => {
+        if (confirm('Clear all stored generation history?')) {
+          clearAllHistory();
+        }
+      });
+
+      function escapeHtml(str) {
+        return (str || '').replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      }
+
+      // Initialize
+      updateCharCount();
+      renderHistoryUI();
+
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          generateQRCode(false);
+        }, 100);
+      });
+
+    })();
+  </script>
+</body>
+</html>
